@@ -1,7 +1,6 @@
 package br.com.danielbrai.clean_arch_study_case.voyage;
 
 import br.com.danielbrai.clean_arch_study_case.cargo.Cargo;
-import br.com.danielbrai.clean_arch_study_case.location.Location;
 import br.com.danielbrai.clean_arch_study_case.route.Route;
 import lombok.Builder;
 import lombok.Data;
@@ -14,9 +13,9 @@ import java.util.Set;
 @Data
 public class Voyage {
 
-    private Location source;
-    private Location destination;
+    private Route source;
+    private Route destination;
     private List<Cargo> cargo;
-    private Set<Route> route;
+    private Set<Route> schedule;
     private BigDecimal capacity;
 }

@@ -1,45 +1,77 @@
 package br.com.danielbrai.clean_arch_study_case.voyage;
 
 import br.com.danielbrai.clean_arch_study_case.cargo.Cargo;
-import br.com.danielbrai.clean_arch_study_case.location.Location;
+import br.com.danielbrai.clean_arch_study_case.coordinate.Coordinate;
+import br.com.danielbrai.clean_arch_study_case.enums.Operations;
 import br.com.danielbrai.clean_arch_study_case.route.Route;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class VoyageService {
 
-    public Voyage createVoyage(Location source, Location destination, BigDecimal shipCapacity) {
+    public static final double OVERBOOKING_TAX = 1.1;
 
-        Route sourceRoute = source.getRoute();
+    public Voyage createShipment(BigDecimal shipCapacity, List<Cargo> initialCargo, Set<Route> schedule) {
+
+        Route origin = schedule.stream().findFirst().orElseThrow();
+        Route destination = schedule.stream().reduce((a, b) -> b).orElseThrow();
 
         Voyage voyage = Voyage.builder()
-                .source(source)
+                .source(origin)
                 .destination(destination)
                 .capacity(shipCapacity)
-                .route(new HashSet<>())
+                .schedule(schedule)
+                .cargo(new LinkedList<>())
                 .build();
 
-        voyage.getRoute().add(sourceRoute);
-
+        initialCargo.forEach(cargo -> this.addCargoToShipment(voyage, origin.getFrom(), cargo));
+        this.registerDeparture(voyage);
         return voyage;
     }
 
-    public void addCargo(Voyage voyage, Cargo cargo) {
+    private void addCargoToShipment(Voyage voyage, Coordinate loadLocation, Cargo cargo) {
 
         BigDecimal bookedCargo = voyage.getCargo().stream().map(Cargo::getCapacity).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal maximumCapacity = voyage.getCapacity().multiply(BigDecimal.valueOf(1.1));
+        BigDecimal maximumCapacity = voyage.getCapacity().multiply(BigDecimal.valueOf(OVERBOOKING_TAX));
 
         if (bookedCargo.add(cargo.getCapacity()).compareTo(maximumCapacity) > 0) {
             throw new RuntimeException("Maximum capacity exceeded!");
         }
 
+        cargo.setLoadLocation(loadLocation);
         voyage.getCargo().add(cargo);
+    }
+
+    private Cargo removeCargoFromShipment(Voyage voyage, Long idCargo) {
+
+        Cargo cargoToUnload = voyage.getCargo().stream().filter(c -> Objects.equals(c.getId(), idCargo)).findFirst().orElse(null);
+        voyage.getCargo().remove(cargoToUnload);
+        return cargoToUnload;
+    }
+
+    public void makeStepOverToLoad(Voyage voyage, Coordinate destination, Cargo cargo) {
+        this.addCargoToShipment(voyage, destination, cargo);
+        this.makeWarehouseOperation(voyage, Operations.LOAD, destination);
+        this.registerArrival(voyage);
+    }
+
+    public Cargo makeStepOverToUnload(Voyage voyage, Coordinate destination, Cargo cargo) {
+        this.makeWarehouseOperation(voyage, Operations.UNLOAD, destination);
+        this.registerArrival(voyage);
+        return this.removeCargoFromShipment(voyage, cargo.getId());
+    }
+
+    private void makeWarehouseOperation(Voyage voyage, Operations operation, Coordinate destination) {
+        Route partialRoute = Route.builder()
+                .operation(operation)
+                .to(destination)
+                .build();
+        voyage.getSchedule().add(partialRoute);
     }
 
     public Cargo dropExcess(List<Cargo> cargos, BigDecimal shipCapacity) {
@@ -52,15 +84,14 @@ public class VoyageService {
         int totalOfCargos = cargos.size();
         int start = 0;
         int end = cargos.size() - 1;
-        Cargo target = null;
+        Cargo target;
 
-
-        if (shippingOverbookingTax.compareTo(cargos.get(start).getCapacity()) == 0) {
+        if (shippingOverbookingTax.compareTo(orderedCargoByCapacity.get(start).getCapacity()) == 0) {
             target = cargos.get(start);
             cargos.remove(target);
         }
 
-        if (shippingOverbookingTax.compareTo(cargos.get(end).getCapacity()) == 0) {
+        if (shippingOverbookingTax.compareTo(orderedCargoByCapacity.get(end).getCapacity()) == 0) {
             target = cargos.get(end);
             cargos.remove(target);
         }
@@ -69,17 +100,18 @@ public class VoyageService {
         while (start < end) {
             mid = (start + end) / 2;
 
-            BigDecimal actualCargoCapacity = cargos.get(mid).getCapacity();
+            BigDecimal actualCargoCapacity = orderedCargoByCapacity.get(mid).getCapacity();
             if (shippingOverbookingTax.compareTo(actualCargoCapacity) == 0) {
-                target = cargos.get(mid);
+                target = orderedCargoByCapacity.get(mid);
                 cargos.remove(target);
+                return target;
             }
 
             if (shippingOverbookingTax.compareTo(actualCargoCapacity) < 0) {
 
-                BigDecimal previousCargoCapacity = cargos.get(mid - 1).getCapacity();
-                if (mid > 0 && shippingOverbookingTax.compareTo(previousCargoCapacity) > 0) {
-                    target = getClosest(cargos.get(mid - 1), cargos.get(mid), shippingOverbookingTax);
+                BigDecimal previousCargoCapacity = orderedCargoByCapacity.get(mid - 1).getCapacity();
+                    if (shippingOverbookingTax.compareTo(previousCargoCapacity) > 0) {
+                    target = getClosestCargoToMoveToNextShip(orderedCargoByCapacity.get(mid - 1), orderedCargoByCapacity.get(mid), shippingOverbookingTax);
                     cargos.remove(target);
                     return target;
                 }
@@ -87,9 +119,9 @@ public class VoyageService {
             }
 
             else {
-                BigDecimal nextCargoCapacity = cargos.get(mid + 1).getCapacity();
+                BigDecimal nextCargoCapacity = orderedCargoByCapacity.get(mid + 1).getCapacity();
                 if (mid < totalOfCargos && shippingOverbookingTax.compareTo(nextCargoCapacity) < 0) {
-                    target = getClosest(cargos.get(mid), cargos.get(mid + 1), shippingOverbookingTax);
+                    target = getClosestCargoToMoveToNextShip(orderedCargoByCapacity.get(mid), orderedCargoByCapacity.get(mid + 1), shippingOverbookingTax);
                     cargos.remove(target);
                     return target;
                 }
@@ -102,11 +134,21 @@ public class VoyageService {
         return target;
     }
 
-    private Cargo getClosest(Cargo cargo1, Cargo cargo2, BigDecimal target) {
+    private Cargo getClosestCargoToMoveToNextShip(Cargo cargo1, Cargo cargo2, BigDecimal target) {
         if (target.subtract(cargo1.getCapacity()).compareTo(cargo2.getCapacity().subtract(target)) > 0) {
             return cargo1;
         } else {
             return cargo2;
         }
+    }
+
+    public void registerArrival(Voyage voyage) {
+        Route route = voyage.getSchedule().stream().reduce((a, b) -> b).orElseGet(null);
+        route.setArrival(LocalDateTime.now());
+    }
+
+    public void registerDeparture(Voyage voyage) {
+        Route route = voyage.getSchedule().stream().reduce((a, b) -> b).orElseGet(null);
+        route.setDeparture(LocalDateTime.now());
     }
 }
