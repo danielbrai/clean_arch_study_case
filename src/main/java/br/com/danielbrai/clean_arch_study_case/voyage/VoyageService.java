@@ -17,22 +17,26 @@ public class VoyageService {
 
     public static final double OVERBOOKING_TAX = 1.1;
 
-    private VoyageRepository voyageRepository;
+    private final VoyageRepository voyageRepository;
 
-    public Voyage createShipment(BigDecimal shipCapacity, List<Cargo> initialCargo, Set<Route> schedule) {
+    private final VoyageRequestModelToEntityMapper voyageRequestModelToEntityMapper;
 
-        Route origin = schedule.stream().findFirst().orElseThrow();
-        Route destination = schedule.stream().reduce((a, b) -> b).orElseThrow();
+    public Voyage createShipment(VoyageRequestModel voyageRequestModel) {
+
+        Voyage mappedVoyage = this.voyageRequestModelToEntityMapper.map(voyageRequestModel);
+
+        Route origin = mappedVoyage.getSchedule().stream().findFirst().orElseThrow();
+        Route destination = mappedVoyage.getSchedule().stream().reduce((a, b) -> b).orElseThrow();
 
         Voyage voyage = Voyage.builder()
-                .source(origin)
+                .origin(origin)
                 .destination(destination)
-                .capacity(shipCapacity)
-                .schedule(schedule)
+                .capacity(mappedVoyage.getCapacity())
+                .schedule(mappedVoyage.getSchedule())
                 .cargo(new LinkedList<>())
                 .build();
 
-        initialCargo.forEach(cargo -> this.addCargoToShipment(voyage, origin.getOrigin(), cargo));
+        mappedVoyage.getCargo().forEach(cargo -> this.addCargoToShipment(voyage, origin.getOrigin(), cargo));
         this.registerDeparture(voyage);
         return this.voyageRepository.save(voyage);
     }
@@ -155,5 +159,9 @@ public class VoyageService {
     public void registerDeparture(Voyage voyage) {
         Route route = voyage.getSchedule().stream().reduce((a, b) -> b).orElseThrow();
         route.setDeparture(LocalDateTime.now());
+    }
+
+    public Voyage retriveVoyage(Long id) {
+        return this.voyageRepository.findById(id).orElse(null);
     }
 }

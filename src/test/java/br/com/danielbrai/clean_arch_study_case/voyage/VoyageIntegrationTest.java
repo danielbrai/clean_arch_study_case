@@ -1,9 +1,11 @@
 package br.com.danielbrai.clean_arch_study_case.voyage;
 
 import br.com.danielbrai.clean_arch_study_case.cargo.Cargo;
+import br.com.danielbrai.clean_arch_study_case.cargo.CargoRequestModel;
 import br.com.danielbrai.clean_arch_study_case.coordinate.Coordinate;
 import br.com.danielbrai.clean_arch_study_case.enums.Operations;
 import br.com.danielbrai.clean_arch_study_case.route.Route;
+import br.com.danielbrai.clean_arch_study_case.route.RouteRequestModel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -83,12 +85,60 @@ class VoyageIntegrationTest {
 
         BigDecimal shipCapacity = new BigDecimal(10);
 
-        Voyage voyage = this.voyageService.createShipment(shipCapacity, initialCargo, schedule);
+
+        CargoRequestModel cargoRequestModelA = CargoRequestModel.builder()
+                .capacity(5)
+                .build();
+
+        CargoRequestModel cargoRequestModelB = CargoRequestModel.builder()
+                .capacity(5)
+                .build();
+
+        LinkedList<CargoRequestModel> cargo = new LinkedList<>();
+        cargo.add(cargoRequestModelA);
+        cargo.add(cargoRequestModelB);
+
+        RouteRequestModel routeRequestModelA = RouteRequestModel.builder()
+                .operation(Operations.LOAD)
+                .xOrigin(-24.752646)
+                .yOrigin(-47.572934)
+                .xDestiny(-28.467)
+                .yDestiny(-49.0075)
+                .build();
+
+        RouteRequestModel routeRequestModelB = RouteRequestModel.builder()
+                .operation(Operations.LOAD)
+                .xOrigin(-28.467)
+                .yOrigin(-49.0075)
+                .xDestiny(-2.44306)
+                .yDestiny(-54.70833)
+                .build();
+
+        RouteRequestModel routeRequestModelC = RouteRequestModel.builder()
+                .operation(Operations.LOAD)
+                .xOrigin(-2.44306)
+                .yOrigin(-54.70833)
+                .xDestiny(51.5)
+                .yDestiny(0.05)
+                .build();
+
+        LinkedHashSet<RouteRequestModel> routes = new LinkedHashSet<>();
+        routes.add(routeRequestModelA);
+        routes.add(routeRequestModelB);
+        routes.add(routeRequestModelC);
+
+        VoyageRequestModel requestModel = VoyageRequestModel.builder()
+                .capacity(10)
+                .cargo(cargo)
+                .schedule(routes)
+                .build();
+
+        Voyage voyage = this.voyageService.createShipment(requestModel);
 
         assertEquals(2, voyage.getCargo().size());
         assertEquals(3, voyage.getSchedule().size());
         assertEquals(BigDecimal.TEN, voyage.getCapacity());
-        assertEquals(santosToTubarao, voyage.getSource());
+        assertEquals(santosToTubarao, voyage.getOrigin());
         assertEquals(santaremToFelixStowe, voyage.getDestination());
     }
 }
