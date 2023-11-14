@@ -426,8 +426,8 @@ class VoyageServiceTest {
         Voyage savedVoyage = Voyage.builder()
                 .id(1L)
                 .capacity(shipCapacity)
-                .destination(santaremToFelixStowe)
-                .origin(santosToTubarao)
+                .destination(santaremToFelixStowe.getDestination())
+                .origin(santosToTubarao.getOrigin())
                 .schedule(schedule)
                 .cargo(initialCargo)
                 .build();
@@ -486,8 +486,8 @@ class VoyageServiceTest {
         Voyage translatedVoyage = Voyage.builder()
                 .id(1L)
                 .capacity(shipCapacity)
-                .destination(santaremToFelixStowe)
-                .origin(santosToTubarao)
+                .destination(santaremToFelixStowe.getDestination())
+                .origin(santosToTubarao.getOrigin())
                 .schedule(schedule)
                 .cargo(initialCargo)
                 .build();
@@ -499,8 +499,8 @@ class VoyageServiceTest {
         assertEquals(2, this.voyageArgumentCaptor.getValue().getCargo().size());
         assertEquals(3, this.voyageArgumentCaptor.getValue().getSchedule().size());
         assertEquals(BigDecimal.TEN, this.voyageArgumentCaptor.getValue().getCapacity());
-        assertEquals(santosToTubarao, this.voyageArgumentCaptor.getValue().getOrigin());
-        assertEquals(santaremToFelixStowe, this.voyageArgumentCaptor.getValue().getDestination());
+        assertEquals(santosToTubarao.getOrigin(), this.voyageArgumentCaptor.getValue().getOrigin());
+        assertEquals(santaremToFelixStowe.getDestination(), this.voyageArgumentCaptor.getValue().getDestination());
         assertEquals(1, voyage.getId());
     }
 }

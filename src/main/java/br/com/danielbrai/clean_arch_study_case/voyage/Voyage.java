@@ -1,6 +1,7 @@
 package br.com.danielbrai.clean_arch_study_case.voyage;
 
 import br.com.danielbrai.clean_arch_study_case.cargo.Cargo;
+import br.com.danielbrai.clean_arch_study_case.coordinate.Coordinate;
 import br.com.danielbrai.clean_arch_study_case.route.Route;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,10 +26,10 @@ public class Voyage {
     private Long id;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    private Route origin;
+    private Coordinate origin;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    private Route destination;
+    private Coordinate destination;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "voyage")
     private List<Cargo> cargo;

@@ -29,8 +29,8 @@ public class VoyageService {
         Route destination = mappedVoyage.getSchedule().stream().reduce((a, b) -> b).orElseThrow();
 
         Voyage voyage = Voyage.builder()
-                .origin(origin)
-                .destination(destination)
+                .origin(origin.getOrigin())
+                .destination(destination.getDestination())
                 .capacity(mappedVoyage.getCapacity())
                 .schedule(mappedVoyage.getSchedule())
                 .cargo(new LinkedList<>())
