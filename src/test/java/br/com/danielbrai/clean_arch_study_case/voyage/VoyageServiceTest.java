@@ -160,7 +160,7 @@ class VoyageServiceTest {
                 .build();
 
         Route route = Route.builder()
-                .to(santosHarbour)
+                .destination(santosHarbour)
                 .arrival(LocalDateTime.now())
                 .build();
 
@@ -214,7 +214,7 @@ class VoyageServiceTest {
                 .build();
 
         Route route = Route.builder()
-                .to(santosHarbour)
+                .destination(santosHarbour)
                 .arrival(LocalDateTime.now())
                 .build();
 
@@ -268,7 +268,7 @@ class VoyageServiceTest {
                     .build();
 
             Route route = Route.builder()
-                    .to(santosHarbour)
+                    .destination(santosHarbour)
                     .arrival(LocalDateTime.now())
                     .build();
 
@@ -326,7 +326,7 @@ class VoyageServiceTest {
                 .build();
 
         Route route = Route.builder()
-                .to(santosHarbour)
+                .destination(santosHarbour)
                 .arrival(LocalDateTime.now())
                 .build();
 
@@ -371,22 +371,22 @@ class VoyageServiceTest {
                 .y(0.05)
                 .build();
 
-        Route santosToTubarao= Route.builder()
+        Route santosToTubarao = Route.builder()
                 .operation(Operations.LOAD)
-                .from(santosPort)
-                .to(tubaraoPort)
+                .origin(santosPort)
+                .destination(tubaraoPort)
                 .build();
 
         Route tubaraoToSantarem = Route.builder()
                 .operation(Operations.UNLOAD)
-                .from(tubaraoPort)
-                .to(santaremPort)
+                .origin(tubaraoPort)
+                .destination(santaremPort)
                 .build();
 
         Route santaremToFelixStowe = Route.builder()
                 .operation(Operations.LOAD)
-                .from(santaremPort)
-                .to(felixstowePort)
+                .origin(santaremPort)
+                .destination(felixstowePort)
                 .build();
 
         Cargo c1 = Cargo.builder()

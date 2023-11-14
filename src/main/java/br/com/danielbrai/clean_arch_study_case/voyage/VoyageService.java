@@ -4,6 +4,7 @@ import br.com.danielbrai.clean_arch_study_case.cargo.Cargo;
 import br.com.danielbrai.clean_arch_study_case.coordinate.Coordinate;
 import br.com.danielbrai.clean_arch_study_case.enums.Operations;
 import br.com.danielbrai.clean_arch_study_case.route.Route;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -11,9 +12,12 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
+@AllArgsConstructor
 public class VoyageService {
 
     public static final double OVERBOOKING_TAX = 1.1;
+
+    private VoyageRepository voyageRepository;
 
     public Voyage createShipment(BigDecimal shipCapacity, List<Cargo> initialCargo, Set<Route> schedule) {
 
@@ -28,9 +32,9 @@ public class VoyageService {
                 .cargo(new LinkedList<>())
                 .build();
 
-        initialCargo.forEach(cargo -> this.addCargoToShipment(voyage, origin.getFrom(), cargo));
+        initialCargo.forEach(cargo -> this.addCargoToShipment(voyage, origin.getOrigin(), cargo));
         this.registerDeparture(voyage);
-        return voyage;
+        return this.voyageRepository.save(voyage);
     }
 
     private void addCargoToShipment(Voyage voyage, Coordinate loadLocation, Cargo cargo) {
@@ -44,7 +48,8 @@ public class VoyageService {
         }
 
         cargo.setLoadLocation(loadLocation);
-        voyage.getCargo().add(cargo);
+        cargo.setUnloadLocation(loadLocation);
+        voyage.addCargo(cargo);
     }
 
     private Cargo removeCargoFromShipment(Voyage voyage, Long idCargo) {
@@ -69,7 +74,7 @@ public class VoyageService {
     private void makeWarehouseOperation(Voyage voyage, Operations operation, Coordinate destination) {
         Route partialRoute = Route.builder()
                 .operation(operation)
-                .to(destination)
+                .destination(destination)
                 .build();
         voyage.getSchedule().add(partialRoute);
     }
@@ -143,12 +148,12 @@ public class VoyageService {
     }
 
     public void registerArrival(Voyage voyage) {
-        Route route = voyage.getSchedule().stream().reduce((a, b) -> b).orElseGet(null);
+        Route route = voyage.getSchedule().stream().reduce((a, b) -> b).orElseThrow();
         route.setArrival(LocalDateTime.now());
     }
 
     public void registerDeparture(Voyage voyage) {
-        Route route = voyage.getSchedule().stream().reduce((a, b) -> b).orElseGet(null);
+        Route route = voyage.getSchedule().stream().reduce((a, b) -> b).orElseThrow();
         route.setDeparture(LocalDateTime.now());
     }
 }

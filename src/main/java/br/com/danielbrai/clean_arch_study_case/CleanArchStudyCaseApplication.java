@@ -9,5 +9,4 @@ public class CleanArchStudyCaseApplication {
     public static void main(String[] args) {
         SpringApplication.run(CleanArchStudyCaseApplication.class, args);
     }
-
 }
