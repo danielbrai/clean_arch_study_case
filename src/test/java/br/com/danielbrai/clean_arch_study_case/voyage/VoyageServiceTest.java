@@ -6,7 +6,10 @@ import br.com.danielbrai.clean_arch_study_case.enums.Operations;
 import br.com.danielbrai.clean_arch_study_case.route.Route;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -14,12 +17,19 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class VoyageServiceTest {
 
     @InjectMocks
     VoyageService voyageService;
+
+    @Mock
+    VoyageRepository voyageRepository;
+
+    @Captor
+    private ArgumentCaptor<Voyage> voyageArgumentCaptor;
 
     @Test
     void shouldDropExcessWhenTheTargetCargoIsTheFirstInArray() {
@@ -408,12 +418,23 @@ class VoyageServiceTest {
 
         BigDecimal shipCapacity = new BigDecimal(10);
 
+        Voyage savedVoyage = Voyage.builder()
+                .id(1L)
+                .capacity(BigDecimal.TEN)
+                .destination(santaremToFelixStowe)
+                .source(santosToTubarao)
+                .schedule(schedule)
+                .cargo(initialCargo)
+                .build();
+
+        when(this.voyageRepository.save(this.voyageArgumentCaptor.capture())).thenReturn(savedVoyage);
+
         Voyage voyage = this.voyageService.createShipment(shipCapacity, initialCargo, schedule);
 
-        assertEquals(2, voyage.getCargo().size());
-        assertEquals(3, voyage.getSchedule().size());
-        assertEquals(BigDecimal.TEN, voyage.getCapacity());
-        assertEquals(santosToTubarao, voyage.getSource());
-        assertEquals(santaremToFelixStowe, voyage.getDestination());
+        assertEquals(2, this.voyageArgumentCaptor.getValue().getCargo().size());
+        assertEquals(3, this.voyageArgumentCaptor.getValue().getSchedule().size());
+        assertEquals(BigDecimal.TEN, this.voyageArgumentCaptor.getValue().getCapacity());
+        assertEquals(santosToTubarao, this.voyageArgumentCaptor.getValue().getSource());
+        assertEquals(santaremToFelixStowe, this.voyageArgumentCaptor.getValue().getDestination());
     }
 }
