@@ -9,6 +9,8 @@ import br.com.danielbrai.clean_arch_study_case.route.RouteRequestModel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
@@ -24,6 +26,9 @@ class VoyageIntegrationTest {
 
     @Autowired
     VoyageRepository repository;
+
+    @Autowired
+    VoyageController voyageController;
 
 
     @Test
@@ -133,12 +138,27 @@ class VoyageIntegrationTest {
                 .schedule(routes)
                 .build();
 
-        Voyage voyage = this.voyageService.createShipment(requestModel);
+        ResponseEntity<Voyage> voyageResponseEntity = this.voyageController.createVoyage(requestModel);
+        Voyage voyage = voyageResponseEntity.getBody();
 
+        Coordinate expectedOrigin = Coordinate.builder()
+                .id(2L)
+                .x(-24.752646)
+                .y(-47.572934)
+                .build();
+
+
+        Coordinate expectedDestination = Coordinate.builder()
+                .id(1L)
+                .x(51.5)
+                .y(0.05)
+                .build();
+
+        assertEquals(HttpStatusCode.valueOf(201), voyageResponseEntity.getStatusCode());
         assertEquals(2, voyage.getCargo().size());
         assertEquals(3, voyage.getSchedule().size());
-        assertEquals(BigDecimal.TEN, voyage.getCapacity());
-        assertEquals(santosToTubarao, voyage.getOrigin());
-        assertEquals(santaremToFelixStowe, voyage.getDestination());
+        assertEquals(BigDecimal.valueOf(10.0), voyage.getCapacity());
+        assertEquals(expectedOrigin, voyage.getOrigin());
+        assertEquals(expectedDestination, voyage.getDestination());
     }
 }

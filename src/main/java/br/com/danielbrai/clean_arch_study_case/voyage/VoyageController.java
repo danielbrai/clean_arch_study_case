@@ -1,7 +1,7 @@
 package br.com.danielbrai.clean_arch_study_case.voyage;
 
-import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,11 +16,10 @@ public class VoyageController {
     VoyageRepository repository;
 
 
-    @PostMapping("")
+    @PostMapping()
     ResponseEntity<Voyage> createVoyage(@RequestBody VoyageRequestModel voyageRequestModel) {
-
         Voyage voyage = this.voyageService.createShipment(voyageRequestModel);
-        return ResponseEntity.ok(voyage);
+        return ResponseEntity.status(HttpStatus.CREATED).body(voyage);
     }
 
     @GetMapping("/{id}")
