@@ -9,10 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -22,29 +19,25 @@ public class VoyageService {
 
     private final VoyageRepository voyageRepository;
 
-    private final VoyageRequestModelToEntityMapper voyageRequestModelToEntityMapper;
+    public Voyage createShipment(double capacity, Set<Route> schedule, List<Cargo> cargos) {
 
-    public Voyage createShipment(VoyageRequestModel voyageRequestModel) {
-
-        Voyage mappedVoyage = this.voyageRequestModelToEntityMapper.map(voyageRequestModel);
-
-        Route origin = mappedVoyage.getSchedule().stream().findFirst().orElseThrow();
-        Route destination = mappedVoyage.getSchedule().stream().reduce((a, b) -> b).orElseThrow();
+        Route origin = schedule.stream().findFirst().orElseThrow();
+        Route destination = schedule.stream().reduce((a, b) -> b).orElseThrow();
 
         Voyage voyage = Voyage.builder()
                 .origin(origin.getOrigin())
                 .destination(destination.getDestination())
-                .capacity(mappedVoyage.getCapacity())
-                .schedule(mappedVoyage.getSchedule())
+                .capacity(BigDecimal.valueOf(capacity))
+                .schedule(schedule)
                 .cargo(new LinkedList<>())
                 .build();
 
-        mappedVoyage.getCargo().forEach(cargo -> this.addCargoToShipment(voyage, origin.getOrigin(), cargo));
+        cargos.forEach(cargo -> this.addCargoToShipment(voyage, origin.getOrigin(), cargo));
         this.registerDeparture(voyage);
         return this.voyageRepository.save(voyage);
     }
 
-    private void addCargoToShipment(Voyage voyage, Coordinate loadLocation, Cargo cargo) {
+    public void addCargoToShipment(Voyage voyage, Coordinate loadLocation, Cargo cargo) {
 
         BigDecimal bookedCargo = voyage.getCargo().stream().map(Cargo::getCapacity).reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -55,11 +48,10 @@ public class VoyageService {
         }
 
         cargo.setLoadLocation(loadLocation);
-        cargo.setUnloadLocation(loadLocation);
         voyage.addCargo(cargo);
     }
 
-    private Cargo removeCargoFromShipment(Voyage voyage, Long idCargo) {
+    public Cargo removeCargoFromShipment(Voyage voyage, Long idCargo) {
 
         Cargo cargoToUnload = voyage.getCargo().stream().filter(c -> Objects.equals(c.getId(), idCargo)).findFirst().orElse(null);
         voyage.getCargo().remove(cargoToUnload);
