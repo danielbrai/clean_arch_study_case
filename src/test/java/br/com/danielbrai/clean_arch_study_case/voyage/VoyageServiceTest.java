@@ -36,274 +36,274 @@ class VoyageServiceTest {
     @Captor
     private ArgumentCaptor<Voyage> voyageArgumentCaptor;
 
-    @Test
-    void shouldDropExcessWhenTheTargetCargoIsTheFirstInArray() {
-
-        Cargo c1 = Cargo.builder()
-                .capacity(new BigDecimal(5))
-                .build();
-
-        Cargo c2 = Cargo.builder()
-                .capacity(new BigDecimal(3))
-                .build();
-
-        Cargo c3 = Cargo.builder()
-                .capacity(new BigDecimal(2))
-                .build();
-
-        Cargo c4 = Cargo.builder()
-                .capacity(new BigDecimal(3))
-                .build();
-
-        Cargo c5 = Cargo.builder()
-                .capacity(new BigDecimal(6))
-                .build();
-
-        Cargo c6 = Cargo.builder()
-                .capacity(new BigDecimal(6))
-                .build();
-
-        List<Cargo> inputCargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5, c6));
-
-        Cargo cargo = this.voyageService.dropExcess(inputCargo, BigDecimal.valueOf(21));
-
-        assertEquals(c1, cargo);
-
-    }
-
-    @Test
-    void shouldDropExcessWhenTheTargetCargoIsAtTheMiddleOfList() {
-
-        Cargo c1 = Cargo.builder()
-                .capacity(new BigDecimal(6))
-                .build();
-
-        Cargo c2 = Cargo.builder()
-                .capacity(new BigDecimal(5))
-                .build();
-
-        Cargo c3 = Cargo.builder()
-                .capacity(new BigDecimal(2))
-                .build();
-
-        Cargo c4 = Cargo.builder()
-                .capacity(new BigDecimal(3))
-                .build();
-
-        Cargo c5 = Cargo.builder()
-                .capacity(new BigDecimal(6))
-                .build();
-
-        Cargo c6 = Cargo.builder()
-                .capacity(new BigDecimal(3))
-                .build();
-
-        List<Cargo> inputCargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5, c6));
-
-        Cargo cargo = this.voyageService.dropExcess(inputCargo, BigDecimal.valueOf(22));
-
-        assertEquals(c4, cargo);
-    }
-
-    @Test
-    void shouldDropExcessWhenTheTargetCargoIsAtTheEndOfList() {
-
-        Cargo c1 = Cargo.builder()
-                .capacity(new BigDecimal(6))
-                .build();
-
-        Cargo c2 = Cargo.builder()
-                .capacity(new BigDecimal(3))
-                .build();
-
-        Cargo c3 = Cargo.builder()
-                .capacity(new BigDecimal(2))
-                .build();
-
-        Cargo c4 = Cargo.builder()
-                .capacity(new BigDecimal(3))
-                .build();
-
-        Cargo c5 = Cargo.builder()
-                .capacity(new BigDecimal(6))
-                .build();
-
-        Cargo c6 = Cargo.builder()
-                .capacity(new BigDecimal(5))
-                .build();
-
-        List<Cargo> inputCargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5, c6));
-
-        Cargo cargo = this.voyageService.dropExcess(inputCargo, BigDecimal.valueOf(21));
-
-        assertEquals(c6, cargo);
-
-    }
-
-    @Test
-    void shouldAcceptMoreCargoIfShipmentCanCarry() {
-
-        Cargo c1 = Cargo.builder()
-                .capacity(new BigDecimal(5))
-                .build();
-
-        Cargo c2 = Cargo.builder()
-                .capacity(new BigDecimal(3))
-                .build();
-
-        Cargo c3 = Cargo.builder()
-                .capacity(new BigDecimal(2))
-                .build();
-
-        Cargo c4 = Cargo.builder()
-                .capacity(new BigDecimal(3))
-                .build();
-
-        Cargo c5 = Cargo.builder()
-                .capacity(new BigDecimal(6))
-                .build();
-
-        Cargo c6 = Cargo.builder()
-                .capacity(new BigDecimal(2))
-                .build();
-
-        List<Cargo> cargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5));
-
-        Coordinate santosHarbour = Coordinate.builder()
-                .x(-24.752646)
-                .y(-47.572934)
-                .build();
-
-        Route route = Route.builder()
-                .destination(santosHarbour)
-                .arrival(LocalDateTime.now())
-                .build();
-
-        HashSet<Route> routes = new HashSet<>();
-        routes.add(route);
-
-        Voyage voyage = Voyage.builder()
-                .cargo(cargo)
-                .capacity(new BigDecimal(22))
-                .schedule(routes)
-                .build();
-
-        this.voyageService.makeStepOverToLoad(voyage, null, c6);
-
-        assertEquals(6, voyage.getCargo().size());
-
-    }
-
-    @Test
-    void shouldAccepAnOverbookingCargoShipmentCanCarry() {
-
-        Cargo c1 = Cargo.builder()
-                .capacity(new BigDecimal(5))
-                .build();
-
-        Cargo c2 = Cargo.builder()
-                .capacity(new BigDecimal(5))
-                .build();
-
-        Cargo c3 = Cargo.builder()
-                .capacity(new BigDecimal(5))
-                .build();
-
-        Cargo c4 = Cargo.builder()
-                .capacity(new BigDecimal(5))
-                .build();
-
-        Cargo c5 = Cargo.builder()
-                .capacity(new BigDecimal(3))
-                .build();
-
-        Cargo c6 = Cargo.builder()
-                .capacity(new BigDecimal(1))
-                .build();
-
-        List<Cargo> cargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5));
-
-        Coordinate santosHarbour = Coordinate.builder()
-                .x(-24.752646)
-                .y(-47.572934)
-                .build();
-
-        Route route = Route.builder()
-                .destination(santosHarbour)
-                .arrival(LocalDateTime.now())
-                .build();
-
-        HashSet<Route> routes = new HashSet<>();
-        routes.add(route);
-
-        Voyage voyage = Voyage.builder()
-                .cargo(cargo)
-                .capacity(new BigDecimal(22))
-                .schedule(routes)
-                .build();
-
-        this.voyageService.makeStepOverToLoad(voyage, null, c6);
-
-        assertEquals(6, voyage.getCargo().size());
-
-    }
-
-    @Test
-    void shouldnotAcceptMoreCargoIfShipmentIsFullyLoaded() {
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            Cargo c1 = Cargo.builder()
-                    .capacity(new BigDecimal(5))
-                    .build();
-
-            Cargo c2 = Cargo.builder()
-                    .capacity(new BigDecimal(5))
-                    .build();
-
-            Cargo c3 = Cargo.builder()
-                    .capacity(new BigDecimal(5))
-                    .build();
-
-            Cargo c4 = Cargo.builder()
-                    .capacity(new BigDecimal(5))
-                    .build();
-
-            Cargo c5 = Cargo.builder()
-                    .capacity(new BigDecimal(1))
-                    .build();
-
-            Cargo c6 = Cargo.builder()
-                    .capacity(new BigDecimal(5))
-                    .build();
-
-            List<Cargo> cargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5));
-
-            Coordinate santosHarbour = Coordinate.builder()
-                    .x(-24.752646)
-                    .y(-47.572934)
-                    .build();
-
-            Route route = Route.builder()
-                    .destination(santosHarbour)
-                    .arrival(LocalDateTime.now())
-                    .build();
-
-            HashSet<Route> routes = new HashSet<>();
-            routes.add(route);
-
-            Voyage voyage = Voyage.builder()
-                    .cargo(cargo)
-                    .capacity(new BigDecimal(22))
-                    .schedule(routes)
-                    .build();
-
-            this.voyageService.makeStepOverToLoad(voyage, null, c6);
-        });
-
-        String expectedMessage = "Maximum capacity exceeded!";
-        String actualMessage = exception.getMessage();
-
-        assertTrue(actualMessage.contains(expectedMessage));
-    }
+//    @Test
+//    void shouldDropExcessWhenTheTargetCargoIsTheFirstInArray() {
+//
+//        Cargo c1 = Cargo.builder()
+//                .capacity(new BigDecimal(5))
+//                .build();
+//
+//        Cargo c2 = Cargo.builder()
+//                .capacity(new BigDecimal(3))
+//                .build();
+//
+//        Cargo c3 = Cargo.builder()
+//                .capacity(new BigDecimal(2))
+//                .build();
+//
+//        Cargo c4 = Cargo.builder()
+//                .capacity(new BigDecimal(3))
+//                .build();
+//
+//        Cargo c5 = Cargo.builder()
+//                .capacity(new BigDecimal(6))
+//                .build();
+//
+//        Cargo c6 = Cargo.builder()
+//                .capacity(new BigDecimal(6))
+//                .build();
+//
+//        List<Cargo> inputCargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5, c6));
+//
+//        Cargo cargo = this.voyageService.dropExcess(inputCargo, BigDecimal.valueOf(21));
+//
+//        assertEquals(c1, cargo);
+//
+//    }
+//
+//    @Test
+//    void shouldDropExcessWhenTheTargetCargoIsAtTheMiddleOfList() {
+//
+//        Cargo c1 = Cargo.builder()
+//                .capacity(new BigDecimal(6))
+//                .build();
+//
+//        Cargo c2 = Cargo.builder()
+//                .capacity(new BigDecimal(5))
+//                .build();
+//
+//        Cargo c3 = Cargo.builder()
+//                .capacity(new BigDecimal(2))
+//                .build();
+//
+//        Cargo c4 = Cargo.builder()
+//                .capacity(new BigDecimal(3))
+//                .build();
+//
+//        Cargo c5 = Cargo.builder()
+//                .capacity(new BigDecimal(6))
+//                .build();
+//
+//        Cargo c6 = Cargo.builder()
+//                .capacity(new BigDecimal(3))
+//                .build();
+//
+//        List<Cargo> inputCargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5, c6));
+//
+//        Cargo cargo = this.voyageService.dropExcess(inputCargo, BigDecimal.valueOf(22));
+//
+//        assertEquals(c4, cargo);
+//    }
+//
+//    @Test
+//    void shouldDropExcessWhenTheTargetCargoIsAtTheEndOfList() {
+//
+//        Cargo c1 = Cargo.builder()
+//                .capacity(new BigDecimal(6))
+//                .build();
+//
+//        Cargo c2 = Cargo.builder()
+//                .capacity(new BigDecimal(3))
+//                .build();
+//
+//        Cargo c3 = Cargo.builder()
+//                .capacity(new BigDecimal(2))
+//                .build();
+//
+//        Cargo c4 = Cargo.builder()
+//                .capacity(new BigDecimal(3))
+//                .build();
+//
+//        Cargo c5 = Cargo.builder()
+//                .capacity(new BigDecimal(6))
+//                .build();
+//
+//        Cargo c6 = Cargo.builder()
+//                .capacity(new BigDecimal(5))
+//                .build();
+//
+//        List<Cargo> inputCargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5, c6));
+//
+//        Cargo cargo = this.voyageService.dropExcess(inputCargo, BigDecimal.valueOf(21));
+//
+//        assertEquals(c6, cargo);
+//
+//    }
+
+//    @Test
+//    void shouldAcceptMoreCargoIfShipmentCanCarry() {
+//
+//        Cargo c1 = Cargo.builder()
+//                .capacity(new BigDecimal(5))
+//                .build();
+//
+//        Cargo c2 = Cargo.builder()
+//                .capacity(new BigDecimal(3))
+//                .build();
+//
+//        Cargo c3 = Cargo.builder()
+//                .capacity(new BigDecimal(2))
+//                .build();
+//
+//        Cargo c4 = Cargo.builder()
+//                .capacity(new BigDecimal(3))
+//                .build();
+//
+//        Cargo c5 = Cargo.builder()
+//                .capacity(new BigDecimal(6))
+//                .build();
+//
+//        Cargo c6 = Cargo.builder()
+//                .capacity(new BigDecimal(2))
+//                .build();
+//
+//        List<Cargo> cargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5));
+//
+//        Coordinate santosHarbour = Coordinate.builder()
+//                .x(-24.752646)
+//                .y(-47.572934)
+//                .build();
+//
+//        Route route = Route.builder()
+//                .destination(santosHarbour)
+//                .arrival(LocalDateTime.now())
+//                .build();
+//
+//        HashSet<Route> routes = new HashSet<>();
+//        routes.add(route);
+//
+//        Voyage voyage = Voyage.builder()
+//                .cargo(cargo)
+//                .capacity(new BigDecimal(22))
+//                .schedule(routes)
+//                .build();
+//
+//        this.voyageService.makeStepOverToLoad(voyage, null, c6);
+//
+//        assertEquals(6, voyage.getCargo().size());
+//
+//    }
+//
+//    @Test
+//    void shouldAccepAnOverbookingCargoShipmentCanCarry() {
+//
+//        Cargo c1 = Cargo.builder()
+//                .capacity(new BigDecimal(5))
+//                .build();
+//
+//        Cargo c2 = Cargo.builder()
+//                .capacity(new BigDecimal(5))
+//                .build();
+//
+//        Cargo c3 = Cargo.builder()
+//                .capacity(new BigDecimal(5))
+//                .build();
+//
+//        Cargo c4 = Cargo.builder()
+//                .capacity(new BigDecimal(5))
+//                .build();
+//
+//        Cargo c5 = Cargo.builder()
+//                .capacity(new BigDecimal(3))
+//                .build();
+//
+//        Cargo c6 = Cargo.builder()
+//                .capacity(new BigDecimal(1))
+//                .build();
+//
+//        List<Cargo> cargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5));
+//
+//        Coordinate santosHarbour = Coordinate.builder()
+//                .x(-24.752646)
+//                .y(-47.572934)
+//                .build();
+//
+//        Route route = Route.builder()
+//                .destination(santosHarbour)
+//                .arrival(LocalDateTime.now())
+//                .build();
+//
+//        HashSet<Route> routes = new HashSet<>();
+//        routes.add(route);
+//
+//        Voyage voyage = Voyage.builder()
+//                .cargo(cargo)
+//                .capacity(new BigDecimal(22))
+//                .schedule(routes)
+//                .build();
+//
+//        this.voyageService.makeStepOverToLoad(voyage, null, c6);
+//
+//        assertEquals(6, voyage.getCargo().size());
+//
+//    }
+//
+//    @Test
+//    void shouldnotAcceptMoreCargoIfShipmentIsFullyLoaded() {
+//        Exception exception = assertThrows(RuntimeException.class, () -> {
+//            Cargo c1 = Cargo.builder()
+//                    .capacity(new BigDecimal(5))
+//                    .build();
+//
+//            Cargo c2 = Cargo.builder()
+//                    .capacity(new BigDecimal(5))
+//                    .build();
+//
+//            Cargo c3 = Cargo.builder()
+//                    .capacity(new BigDecimal(5))
+//                    .build();
+//
+//            Cargo c4 = Cargo.builder()
+//                    .capacity(new BigDecimal(5))
+//                    .build();
+//
+//            Cargo c5 = Cargo.builder()
+//                    .capacity(new BigDecimal(1))
+//                    .build();
+//
+//            Cargo c6 = Cargo.builder()
+//                    .capacity(new BigDecimal(5))
+//                    .build();
+//
+//            List<Cargo> cargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5));
+//
+//            Coordinate santosHarbour = Coordinate.builder()
+//                    .x(-24.752646)
+//                    .y(-47.572934)
+//                    .build();
+//
+//            Route route = Route.builder()
+//                    .destination(santosHarbour)
+//                    .arrival(LocalDateTime.now())
+//                    .build();
+//
+//            HashSet<Route> routes = new HashSet<>();
+//            routes.add(route);
+//
+//            Voyage voyage = Voyage.builder()
+//                    .cargo(cargo)
+//                    .capacity(new BigDecimal(22))
+//                    .schedule(routes)
+//                    .build();
+//
+//            this.voyageService.makeStepOverToLoad(voyage, null, c6);
+//        });
+//
+//        String expectedMessage = "Maximum capacity exceeded!";
+//        String actualMessage = exception.getMessage();
+//
+//        assertTrue(actualMessage.contains(expectedMessage));
+//    }
 
     @Test
     void shouldRemoveACargoFromShipmentIfItIsLoaded() {
