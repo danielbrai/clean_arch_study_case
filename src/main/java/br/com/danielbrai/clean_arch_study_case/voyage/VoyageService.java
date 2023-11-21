@@ -5,6 +5,7 @@ import br.com.danielbrai.clean_arch_study_case.coordinate.Coordinate;
 import br.com.danielbrai.clean_arch_study_case.enums.Operations;
 import br.com.danielbrai.clean_arch_study_case.route.Route;
 import lombok.AllArgsConstructor;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -78,26 +79,32 @@ public class VoyageService {
         voyage.getSchedule().add(partialRoute);
     }
 
-    public Cargo dropExcess(List<Cargo> cargos, BigDecimal shipCapacity) {
+    public Cargo dropExcess(Long id) throws ChangeSetPersister.NotFoundException {
 
-        List<Cargo> orderedCargoByCapacity = cargos.stream().sorted(Comparator.comparing(Cargo::getCapacity)).toList();
-        BigDecimal bookedCargo = cargos.stream().map(Cargo::getCapacity).reduce(BigDecimal.ZERO, BigDecimal::add);
+        Voyage voyage = this.voyageRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);
 
-        BigDecimal shippingOverbookingTax = bookedCargo.subtract(shipCapacity);
+        List<Cargo> orderedCargoByCapacity = voyage.getCargo().stream().sorted(Comparator.comparing(Cargo::getCapacity)).toList();
+        BigDecimal bookedCargo = voyage.getCargo().stream().map(Cargo::getCapacity).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        int totalOfCargos = cargos.size();
+        BigDecimal shippingOverbookingTax = bookedCargo.subtract(voyage.getCapacity());
+
+        int totalOfCargos = voyage.getCargo().size();
         int start = 0;
-        int end = cargos.size() - 1;
+        int end = voyage.getCargo().size() - 1;
         Cargo target;
 
         if (shippingOverbookingTax.compareTo(orderedCargoByCapacity.get(start).getCapacity()) == 0) {
-            target = cargos.get(start);
-            cargos.remove(target);
+            target = orderedCargoByCapacity.get(start);
+            voyage.getCargo().removeIf(c -> Objects.equals(c.getId(), target.getId()));
+            this.voyageRepository.save(voyage);
+            return target;
         }
 
         if (shippingOverbookingTax.compareTo(orderedCargoByCapacity.get(end).getCapacity()) == 0) {
-            target = cargos.get(end);
-            cargos.remove(target);
+            target = voyage.getCargo().get(end);
+            voyage.getCargo().removeIf(c -> Objects.equals(c.getId(), target.getId()));
+            this.voyageRepository.save(voyage);
+            return target;
         }
 
         int mid = 0;
@@ -107,34 +114,36 @@ public class VoyageService {
             BigDecimal actualCargoCapacity = orderedCargoByCapacity.get(mid).getCapacity();
             if (shippingOverbookingTax.compareTo(actualCargoCapacity) == 0) {
                 target = orderedCargoByCapacity.get(mid);
-                cargos.remove(target);
+                voyage.getCargo().remove(target);
+                this.voyageRepository.save(voyage);
                 return target;
             }
 
             if (shippingOverbookingTax.compareTo(actualCargoCapacity) < 0) {
 
                 BigDecimal previousCargoCapacity = orderedCargoByCapacity.get(mid - 1).getCapacity();
-                    if (shippingOverbookingTax.compareTo(previousCargoCapacity) > 0) {
+                if (shippingOverbookingTax.compareTo(previousCargoCapacity) > 0) {
                     target = getClosestCargoToMoveToNextShip(orderedCargoByCapacity.get(mid - 1), orderedCargoByCapacity.get(mid), shippingOverbookingTax);
-                    cargos.remove(target);
+                    voyage.getCargo().remove(target);
+                    this.voyageRepository.save(voyage);
                     return target;
                 }
                 end = mid;
-            }
-
-            else {
+            } else {
                 BigDecimal nextCargoCapacity = orderedCargoByCapacity.get(mid + 1).getCapacity();
                 if (mid < totalOfCargos && shippingOverbookingTax.compareTo(nextCargoCapacity) < 0) {
                     target = getClosestCargoToMoveToNextShip(orderedCargoByCapacity.get(mid), orderedCargoByCapacity.get(mid + 1), shippingOverbookingTax);
-                    cargos.remove(target);
+                    voyage.getCargo().remove(target);
+                    this.voyageRepository.save(voyage);
                     return target;
                 }
                 start = mid + 1;
             }
         }
 
-        target = cargos.get(mid);
-        cargos.remove(target);
+        target = voyage.getCargo().get(mid);
+        voyage.getCargo().remove(target);
+        this.voyageRepository.save(voyage);
         return target;
     }
 

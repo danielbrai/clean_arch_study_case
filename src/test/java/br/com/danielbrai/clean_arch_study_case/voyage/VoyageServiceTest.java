@@ -11,6 +11,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.crossstore.ChangeSetPersister;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -35,7 +36,7 @@ class VoyageServiceTest {
     private ArgumentCaptor<Voyage> voyageArgumentCaptor;
 
     @Test
-    void shouldDropExcessWhenTheTargetCargoIsTheFirstInArray() {
+    void shouldDropExcessWhenTheTargetCargoIsTheFirstInArray() throws ChangeSetPersister.NotFoundException {
 
         Cargo c1 = Cargo.builder()
                 .capacity(new BigDecimal(5))
@@ -63,14 +64,21 @@ class VoyageServiceTest {
 
         List<Cargo> inputCargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5, c6));
 
-        Cargo cargo = this.voyageService.dropExcess(inputCargo, BigDecimal.valueOf(21));
+        Voyage build = Voyage.builder()
+                .cargo(inputCargo)
+                .capacity(BigDecimal.valueOf(21))
+                .build();
 
+        when(this.voyageRepository.findById(1L)).thenReturn(Optional.of(build));
+
+
+        Cargo cargo = this.voyageService.dropExcess(1L);
         assertEquals(c1, cargo);
 
     }
 
     @Test
-    void shouldDropExcessWhenTheTargetCargoIsAtTheMiddleOfList() {
+    void shouldDropExcessWhenTheTargetCargoIsAtTheMiddleOfList() throws ChangeSetPersister.NotFoundException {
 
         Cargo c1 = Cargo.builder()
                 .capacity(new BigDecimal(6))
@@ -98,13 +106,20 @@ class VoyageServiceTest {
 
         List<Cargo> inputCargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5, c6));
 
-        Cargo cargo = this.voyageService.dropExcess(inputCargo, BigDecimal.valueOf(22));
+
+        Voyage build = Voyage.builder()
+                .cargo(inputCargo)
+                .capacity(BigDecimal.valueOf(22))
+                .build();
+
+        when(this.voyageRepository.findById(1L)).thenReturn(Optional.of(build));
+        Cargo cargo = this.voyageService.dropExcess(1L);
 
         assertEquals(c4, cargo);
     }
 
     @Test
-    void shouldDropExcessWhenTheTargetCargoIsAtTheEndOfList() {
+    void shouldDropExcessWhenTheTargetCargoIsAtTheEndOfList() throws ChangeSetPersister.NotFoundException {
 
         Cargo c1 = Cargo.builder()
                 .capacity(new BigDecimal(6))
@@ -132,7 +147,14 @@ class VoyageServiceTest {
 
         List<Cargo> inputCargo = new LinkedList<>(Arrays.asList(c1, c2, c3, c4, c5, c6));
 
-        Cargo cargo = this.voyageService.dropExcess(inputCargo, BigDecimal.valueOf(21));
+        Voyage build = Voyage.builder()
+                .cargo(inputCargo)
+                .capacity(BigDecimal.valueOf(21))
+                .build();
+
+        when(this.voyageRepository.findById(1L)).thenReturn(Optional.of(build));
+
+        Cargo cargo = this.voyageService.dropExcess(1L);
 
         assertEquals(c6, cargo);
 

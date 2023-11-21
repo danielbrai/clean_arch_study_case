@@ -31,10 +31,10 @@ public class Voyage {
     @ManyToOne(cascade = CascadeType.ALL)
     private Coordinate destination;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "voyage")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "voyage", orphanRemoval = true)
     private List<Cargo> cargo;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "VOYAGE_ID")
     private Set<Route> schedule;
 
@@ -43,6 +43,11 @@ public class Voyage {
     public void addCargo(Cargo cargo) {
         cargo.setVoyage(this);
         this.cargo.add(cargo);
+    }
+
+    public void dropCargo(Cargo cargo) {
+        cargo.setVoyage(null);
+        this.cargo.remove(cargo);
     }
 
     public void addRoute(Route route) {

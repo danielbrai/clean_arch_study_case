@@ -4,7 +4,9 @@ import br.com.danielbrai.clean_arch_study_case.cargo.Cargo;
 import br.com.danielbrai.clean_arch_study_case.cargo.CargoRequestModelToEntityMapper;
 import br.com.danielbrai.clean_arch_study_case.route.Route;
 import br.com.danielbrai.clean_arch_study_case.route.RouteRequestModelToEntityMapper;
+import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +35,12 @@ public class VoyageController {
         Set<Route> mappedSchedule = requestModel.getSchedule().stream().map(this.routeRequestModelToEntityMapper::map).collect(Collectors.toCollection(LinkedHashSet::new));
         Voyage voyage = this.voyageService.createShipment(requestModel.getCapacity(), mappedSchedule, mappedCargo);
         return ResponseEntity.status(HttpStatus.CREATED).body(voyage);
+    }
+
+    @PatchMapping("/{id}")
+    ResponseEntity<Cargo> sendVoyage(@PathVariable Long id) throws ChangeSetPersister.NotFoundException {
+        Cargo cargo = this.voyageService.dropExcess(id);
+        return ResponseEntity.status(HttpStatus.CREATED).body(cargo);
     }
 
     @GetMapping("/{id}")
