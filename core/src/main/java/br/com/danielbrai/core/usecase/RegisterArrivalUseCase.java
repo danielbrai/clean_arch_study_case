@@ -2,8 +2,8 @@ package br.com.danielbrai.core.usecase;
 
 import br.com.danielbrai.core.entity.Route;
 import br.com.danielbrai.core.entity.Voyage;
+import jakarta.inject.Named;
 
-import javax.inject.Named;
 import java.time.LocalDateTime;
 
 @Named

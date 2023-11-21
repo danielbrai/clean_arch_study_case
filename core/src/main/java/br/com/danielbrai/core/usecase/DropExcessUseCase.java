@@ -1,11 +1,13 @@
 package br.com.danielbrai.core.usecase;
 
 import br.com.danielbrai.core.entity.Cargo;
+import jakarta.inject.Named;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 
+@Named
 public class DropExcessUseCase {
 
     public Cargo execute(List<Cargo> cargos, BigDecimal shipCapacity) {

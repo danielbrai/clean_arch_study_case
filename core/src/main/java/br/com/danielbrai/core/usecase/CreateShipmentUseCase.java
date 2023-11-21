@@ -4,11 +4,9 @@ import br.com.danielbrai.core.dataprovider.VoyageDataProvider;
 import br.com.danielbrai.core.entity.Cargo;
 import br.com.danielbrai.core.entity.Route;
 import br.com.danielbrai.core.entity.Voyage;
+import jakarta.inject.Named;
 import lombok.AllArgsConstructor;
 
-import javax.inject.Named;
-import java.math.BigDecimal;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -16,29 +14,14 @@ import java.util.Set;
 @AllArgsConstructor
 public class CreateShipmentUseCase {
 
+    @Named("voyageDataBaseDataProvider")
+    private final VoyageDataProvider voyageDataBaseDataProvider;
 
-    private final AddCagoToShipmentUseCase addCagoToShipmentUseCase;
+    @Named
+    private final PrepareShipmentToDeparture prepareShipmentToDeparture;
 
-    private final RegisterDepartureUseCase registerDepartureUseCase;
-
-    private final VoyageDataProvider voyageDataProvider;
-
-    public Voyage createShipment(double capacity, Set<Route> schedule, List<Cargo> cargos) {
-
-        Route origin = schedule.stream().findFirst().orElseThrow();
-        Route destination = schedule.stream().reduce((a, b) -> b).orElseThrow();
-
-        Voyage voyage = Voyage.builder()
-                .origin(origin.getOrigin())
-                .destination(destination.getDestination())
-                .capacity(BigDecimal.valueOf(capacity))
-                .schedule(schedule)
-                .cargo(new LinkedList<>())
-                .build();
-
-        cargos.forEach(cargo -> this.addCagoToShipmentUseCase.execute(voyage, origin.getOrigin(), cargo));
-        this.registerDepartureUseCase.execute(voyage);
-        return this.voyageDataProvider.save(voyage);
+    public Voyage execute(double capacity, Set<Route> schedule, List<Cargo> cargos) {
+        Voyage voyage = this.prepareShipmentToDeparture.execute(capacity, schedule, cargos);
+        return this.voyageDataBaseDataProvider.save(voyage);
     }
-
 }

@@ -17,10 +17,24 @@
         <java.version>17</java.version>
     </properties>
 
+    <!-- Esta entrada habilita um projeto multi módulos -->
     <packaging>pom</packaging>
 
     <modules>
         <module>core</module>
         <module>app</module>
     </modules>
+
+    <!-- Esta seção é necessária para o build através do maven -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
