@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -29,7 +30,8 @@ public class VoyageEntity {
     private CoordinateEntity destination;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "voyage")
-    private List<CargoEntity> cargo;
+    @Builder.Default
+    private List<CargoEntity> cargo = new LinkedList<>();
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "VOYAGE_ID")

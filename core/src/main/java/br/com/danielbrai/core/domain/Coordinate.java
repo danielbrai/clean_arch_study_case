@@ -1,4 +1,4 @@
-package br.com.danielbrai.core.entity;
+package br.com.danielbrai.core.domain;
 
 import lombok.Builder;
 import lombok.Data;

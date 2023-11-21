@@ -1,10 +1,10 @@
 package br.com.danielbrai.app.infra.mappers;
 
 import br.com.danielbrai.app.dataprovider.db.table.VoyageEntity;
-import br.com.danielbrai.core.entity.Cargo;
-import br.com.danielbrai.core.entity.Coordinate;
-import br.com.danielbrai.core.entity.Route;
-import br.com.danielbrai.core.entity.Voyage;
+import br.com.danielbrai.core.domain.Cargo;
+import br.com.danielbrai.core.domain.Coordinate;
+import br.com.danielbrai.core.domain.Route;
+import br.com.danielbrai.core.domain.Voyage;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashSet;
@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
-public class VoyageEntityToDomainModelMapper implements Mapper<VoyageEntity, Voyage> {
+public class VoyageEntityToCoreDomainMapper implements Mapper<VoyageEntity, Voyage> {
     @Override
     public Voyage map(VoyageEntity input) {
 

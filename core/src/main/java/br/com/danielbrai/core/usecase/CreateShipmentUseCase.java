@@ -1,9 +1,9 @@
 package br.com.danielbrai.core.usecase;
 
 import br.com.danielbrai.core.dataprovider.VoyageDataProvider;
-import br.com.danielbrai.core.entity.Cargo;
-import br.com.danielbrai.core.entity.Route;
-import br.com.danielbrai.core.entity.Voyage;
+import br.com.danielbrai.core.domain.Cargo;
+import br.com.danielbrai.core.domain.Route;
+import br.com.danielbrai.core.domain.Voyage;
 import jakarta.inject.Named;
 import lombok.AllArgsConstructor;
 

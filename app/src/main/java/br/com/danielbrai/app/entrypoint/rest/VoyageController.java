@@ -1,11 +1,11 @@
 package br.com.danielbrai.app.entrypoint.rest;
 
 import br.com.danielbrai.app.entrypoint.rest.model.request.VoyageRequestModel;
-import br.com.danielbrai.app.infra.mappers.CargoRequestModelToCoreEntityMapper;
-import br.com.danielbrai.app.infra.mappers.RouteRequestModelToCoreEntityMapper;
-import br.com.danielbrai.core.entity.Cargo;
-import br.com.danielbrai.core.entity.Route;
-import br.com.danielbrai.core.entity.Voyage;
+import br.com.danielbrai.app.infra.mappers.CargoRequestModelToCoreDomainMapper;
+import br.com.danielbrai.app.infra.mappers.RouteRequestModelToCoreDomainMapper;
+import br.com.danielbrai.core.domain.Cargo;
+import br.com.danielbrai.core.domain.Route;
+import br.com.danielbrai.core.domain.Voyage;
 import br.com.danielbrai.core.usecase.CreateShipmentUseCase;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,16 +26,16 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class VoyageController {
 
-    private final CargoRequestModelToCoreEntityMapper cargoRequestModelToCoreEntityMapper;
+    private final CargoRequestModelToCoreDomainMapper cargoRequestModelToCoreDomainMapper;
 
-    private final RouteRequestModelToCoreEntityMapper routeRequestModelToCoreEntityMapper;
+    private final RouteRequestModelToCoreDomainMapper routeRequestModelToCoreDomainMapper;
 
     private final CreateShipmentUseCase createShipmentUseCase;
 
     @PostMapping()
     public ResponseEntity<Voyage> createVoyage(@RequestBody VoyageRequestModel requestModel) {
-        List<Cargo> mappedCargo = requestModel.getCargo().stream().map(this.cargoRequestModelToCoreEntityMapper::map).collect(Collectors.toCollection(LinkedList::new));
-        Set<Route> mappedSchedule = requestModel.getSchedule().stream().map(this.routeRequestModelToCoreEntityMapper::map).collect(Collectors.toCollection(LinkedHashSet::new));
+        List<Cargo> mappedCargo = requestModel.getCargo().stream().map(this.cargoRequestModelToCoreDomainMapper::map).collect(Collectors.toCollection(LinkedList::new));
+        Set<Route> mappedSchedule = requestModel.getSchedule().stream().map(this.routeRequestModelToCoreDomainMapper::map).collect(Collectors.toCollection(LinkedHashSet::new));
         Voyage voyage = this.createShipmentUseCase.execute(requestModel.getCapacity(), mappedSchedule, mappedCargo);
         return ResponseEntity.status(HttpStatus.CREATED).body(voyage);
     }

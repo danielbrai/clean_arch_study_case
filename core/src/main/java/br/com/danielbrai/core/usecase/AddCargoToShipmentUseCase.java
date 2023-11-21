@@ -1,8 +1,8 @@
 package br.com.danielbrai.core.usecase;
 
-import br.com.danielbrai.core.entity.Cargo;
-import br.com.danielbrai.core.entity.Coordinate;
-import br.com.danielbrai.core.entity.Voyage;
+import br.com.danielbrai.core.domain.Cargo;
+import br.com.danielbrai.core.domain.Coordinate;
+import br.com.danielbrai.core.domain.Voyage;
 import br.com.danielbrai.core.exceptions.MaximumCapacityExceededException;
 import jakarta.inject.Named;
 

@@ -1,13 +1,13 @@
 package br.com.danielbrai.app.infra.mappers;
 
 import br.com.danielbrai.app.entrypoint.rest.model.request.RouteRequestModel;
-import br.com.danielbrai.core.entity.Coordinate;
-import br.com.danielbrai.core.entity.Route;
+import br.com.danielbrai.core.domain.Coordinate;
+import br.com.danielbrai.core.domain.Route;
 import jakarta.inject.Named;
 
 
 @Named
-public class RouteRequestModelToCoreEntityMapper implements Mapper<RouteRequestModel, Route> {
+public class RouteRequestModelToCoreDomainMapper implements Mapper<RouteRequestModel, Route> {
     @Override
     public Route map(RouteRequestModel input) {
         Coordinate origin = Coordinate.builder()

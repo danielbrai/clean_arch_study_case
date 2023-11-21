@@ -1,10 +1,7 @@
 package br.com.danielbrai.app.dataprovider.db.table;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -30,6 +27,6 @@ public class CargoEntity {
     private CoordinateEntity unloadLocation;
 
     @ManyToOne
-//    @EqualsAndHashCode.Exclude
+    @EqualsAndHashCode.Exclude
     private VoyageEntity voyage;
 }

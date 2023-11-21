@@ -1,4 +1,4 @@
-package br.com.danielbrai.core.entity.enums;
+package br.com.danielbrai.core.domain.enums;
 
 public enum Operations {
     LOAD, UNLOAD

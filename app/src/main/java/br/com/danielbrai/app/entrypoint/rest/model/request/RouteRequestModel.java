@@ -1,6 +1,6 @@
 package  br.com.danielbrai.app.entrypoint.rest.model.request;
 
-import br.com.danielbrai.core.entity.enums.Operations;
+import br.com.danielbrai.core.domain.enums.Operations;
 import lombok.Builder;
 import lombok.Data;
 

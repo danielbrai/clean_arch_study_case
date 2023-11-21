@@ -1,6 +1,6 @@
 package br.com.danielbrai.app.dataprovider.db.table;
 
-import br.com.danielbrai.core.entity.enums.Operations;
+import br.com.danielbrai.core.domain.enums.Operations;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

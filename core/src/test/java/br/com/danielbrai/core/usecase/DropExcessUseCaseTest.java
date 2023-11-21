@@ -1,6 +1,6 @@
 package br.com.danielbrai.core.usecase;
 
-import br.com.danielbrai.core.entity.Cargo;
+import br.com.danielbrai.core.domain.Cargo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
